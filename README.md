@@ -11,4 +11,9 @@
 	*git commit -m "update"
 	*git push
 	*git push origin master
+######BROOTKIT
+    hids v0.10
+
+    by ny 2016
+
 
