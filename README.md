@@ -4,11 +4,18 @@
 
 
 ######command
+
     git pull
+
     git diff
+
     git add <filename>
+
     git add *
+
     git commit -m "update"
+
     git push
+
     git push origin master
 
