@@ -1,0 +1,70 @@
+#!/bin/bash
+
+str="Oct 15 21:25:26 ny-ubuntu sshd[7826]: Failed password for root from 120.77.47.97 port 45904 ssh2"
+
+brute_force_path=$(cd $(dirname $0)/..;pwd)
+bin_file="$brute_force_path/bin/brute_force"
+conf_file="$brute_force_path/conf/ssh.conf"
+log_file="$brute_force_path/log/brute_force.log"
+
+monitor_file=""
+key_words=""
+limit_time=0
+limit_error_num=0
+scan_frequency=0
+white_list=""
+
+get_conf(){
+	
+	log_file_content=$(cat $conf_file)
+	while read line
+	do
+		key_word_tmp=${line%%]*}
+		key_word=${key_word_tmp:1}
+		value_tmp=${line%]*}
+		value=${value_tmp##*[}
+		case $key_word in
+			"monitor_file") 
+				monitor_file="$value"
+				;;  
+			"key_words") 
+				key_words="$value"
+				;;  
+			"limit_time") 
+				limit_time=$value
+				;;  
+			"limit_error_num") 
+				limit_error_num=$value
+				;;  
+			"scan_frequency") 
+				scan_frequency=$value
+				;;  
+			"white_list") 
+				white_list="value"
+				;;  
+		esac
+	done < $conf_file
+	
+}
+
+show(){
+	echo $monitor_file
+	echo $key_words
+	echo $limit_time
+	echo $limit_error_num
+	echo $scan_frequency
+	echo ">"$white_list
+}
+
+analysis_log(){
+:
+
+}
+
+main(){
+	get_conf
+	show
+	analysis_log
+}
+
+main 
