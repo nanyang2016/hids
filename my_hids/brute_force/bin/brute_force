@@ -63,10 +63,22 @@ show(){
 }
 
 analysis_log(){
-:
+	local log_str bf_time bf_user bf_ip
+
+str="Oct 15 21:25:26 ny-ubuntu sshd[7826]: Failed password for root from 120.77.47.97 port 45904 ssh2"
+
+	log_str="$1"
+
+	#no brute force
+	[[ "$log_str" =~ "$key_words" ]] || return 0	
+ 
+	#finded brute force
+	bf_time=${log_str:0:15}
+#########	
+	
 }
 
-judge_bf_num(){
+handle_ret(){
 :
 
 }
@@ -75,14 +87,13 @@ do_analysis(){
 	local new_add_log
 	local bf_num
 
-	new_add_log=$(cat $monitor_file|tail)
-	echo $new_add_log
-	##
+	cat $monitor_file|tail|while read log_line
+	do	
+		analysis_log "$log_line"
+		ret=$?
+		handle_ret $ret
+	done
 
-	analysis_log $new_add_log
-	bf_num=$?
-
-	judge_bf_num $bf_num
 }
 
 analysis_loop(){
