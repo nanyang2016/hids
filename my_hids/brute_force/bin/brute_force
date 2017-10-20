@@ -73,9 +73,17 @@ str="Oct 15 21:25:26 ny-ubuntu sshd[7826]: Failed password for root from 120.77.
 	[[ "$log_str" =~ "$key_words" ]] || return 0	
  
 	#finded brute force
-	bf_time=${log_str:0:15}
-#########	
+	bf_time=$(echo $log_str| cut -d " " -f 1-3)
+	bf_user=$(echo $log_str| sed -n 's/^.*for \(.*\) from.*$/\1/p')
+	bf_ip=$(echo $log_str| grep -E -o "(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)|localhost")
+	bf_info="find brute force for $bf_user from $bf_ip in $bf_time "
+	echo $bf_info
 	
+	if [ "$bf_user"x = "root"x ];then
+		return 1
+	else
+		return 2
+	fi
 }
 
 handle_ret(){
