@@ -14,6 +14,11 @@ limit_error_num=0
 scan_frequency=0
 white_list=""
 
+declare -a bf_ip_arr=()
+declare -a bf_ip_count_arr=()
+declare bf_arr_index=0
+declare file_offset=0
+
 get_conf(){
 	local log_file_content key_word_tmp key_word value_tmp value
 	local rt=0
@@ -53,6 +58,10 @@ get_conf(){
 	return $rt
 }
 
+init(){
+	file_offset=`wc -l $monitor_file|awk '{print $1}'`
+}
+
 show(){
 	echo $monitor_file
 	echo $key_words
@@ -63,31 +72,59 @@ show(){
 }
 
 analysis_log(){
-	local log_str bf_time bf_user bf_ip
-
-str="Oct 15 21:25:26 ny-ubuntu sshd[7826]: Failed password for root from 120.77.47.97 port 45904 ssh2"
-
 	log_str="$1"
 
 	#no brute force
-	[[ "$log_str" =~ "$key_words" ]] || return 0	
- 
-	#finded brute force
+	[[ "$1" =~ "$key_words" ]] || return 0	
+	
+	return 1
+}
+
+is_new_ip(){
+	local tmp_ip
+
+	for tmp_ip in "$bf_ip_count_arr[@]"
+	do
+		[ "$tmp_ip"x = "$1"x ] || return 1
+	done
+
+	return 0
+}
+
+handle_bf(){
+	local log_str bf_time bf_user bf_ip
+	local tmp_index=0 tmp_ip
+
+	log_str="$1"
+
 	bf_time=$(echo $log_str| cut -d " " -f 1-3)
 	bf_user=$(echo $log_str| sed -n 's/^.*for \(.*\) from.*$/\1/p')
 	bf_ip=$(echo $log_str| grep -E -o "(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)|localhost")
-	bf_info="find brute force for $bf_user from $bf_ip in $bf_time "
+	#bf_info="find brute force for $bf_user from $bf_ip in $bf_time "
 	echo $bf_info
 	
-	if [ "$bf_user"x = "root"x ];then
-		return 1
+	is_new_ip "$bf_ip"
+	ret=$?
+	if [ $ret -eq 0 ];then
+		#is new ip
+	echo "new"
+		bf_ip_arr[$bf_arr_index]="$bf_ip"
+		((bf_ip_count_arr[$bf_arr_index]=1))
+		echo ${bf_ip_arr[$bf_arr_index]}
+		echo ${bf_ip_count_arr[$bf_arr_index]}
+		((bf_arr_index++))
 	else
-		return 2
+		echo "old"
+		#not new ip
+		for tmp_ip in "bf_ip_count_arr[@]"
+		do
+			[ "$tmp_ip"x == "$bf_ip"x ] || break
+			((tmp_index++))
+		done
+		((bf_ip_count_arr[$tmp_index]++))
+		echo "index:"$tmp_index
+		echo "count:"${bf_ip_count_arr[$tmp_index]}
 	fi
-}
-
-handle_ret(){
-:
 
 }
 
@@ -95,12 +132,15 @@ do_analysis(){
 	local new_add_log
 	local bf_num
 
-	cat $monitor_file|tail|while read log_line
-	do	
-		analysis_log "$log_line"
-		ret=$?
-		handle_ret $ret
-	done
+	${cat $monitor_file| sed -n "$file_offset,$p"}
+#	cat $monitor_file|tail|while read log_line
+#	do	
+#		analysis_log "$log_line"
+#		ret=$?
+#		[ $ret == 0 ] && continue
+#
+#		handle_bf "$log_line"
+#	done
 
 }
 
@@ -116,6 +156,7 @@ analysis_loop(){
 main(){
 	get_conf
 #	show
+	init
 	analysis_loop
 }
 
