@@ -1,15 +1,11 @@
 #!/bin/bash
 
-strA="helloworld"
-strB="low"
+line=`wc -l /var/log/auth.log `
+line=8431
+#str=`sed -n "$line,\$p" /var/log/auth.log`
 
-test(){
-	if [[ $strA =~ $strB ]]
-	then
-    		echo "包含"
-	else
-    		echo "不包含"
-	fi
-}
+str=`sed -n "$line,\$p" /var/log/auth.log`
 
-test
+
+
+echo "$str"
