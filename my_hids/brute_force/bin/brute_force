@@ -7,6 +7,7 @@ todolist="
 	2.error configer arguments
 	3.function for show arr_ip
 	4.different log format
+	5.delete tmp_file or move to /tmp
 "
 
 str="Oct 15 21:25:26 ny-ubuntu sshd[7826]: Failed password for root from 120.77.47.97 port 45904 ssh2"
