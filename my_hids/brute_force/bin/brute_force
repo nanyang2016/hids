@@ -2,6 +2,13 @@
 
 # set -x 
 
+todolist="
+	1.no monitor/log/conf file
+	2.error configer arguments
+	3.function for show arr_ip
+	4.different log format
+"
+
 str="Oct 15 21:25:26 ny-ubuntu sshd[7826]: Failed password for root from 120.77.47.97 port 45904 ssh2"
 
 brute_force_path=$(cd $(dirname $0)/..;pwd)
@@ -37,7 +44,7 @@ do_log(){
 			;;
 	esac
 
-	log_time=$(date +"%Y%m%d_%H:%M:%S")
+	log_time=$(date +"%Y/%m/%d_%H:%M:%S")
 	log_content="$2"
 
 	printf "%-18s %-8s %s\n" "$log_time" "$log_type" "$log_content"	>> $log_file
@@ -45,12 +52,14 @@ do_log(){
 
 
 parse_conf(){
-	local log_file_content key_word_tmp key_word value_tmp value
+	local log_file_content key_word_tmp key_word value_tmp value line
 	local rt=0
 
 	log_file_content=$(cat $conf_file)
 	while read line
 	do
+		[ "${line:0:1}"x == "#" -a -z "$line" ] && continue		
+
 		key_word_tmp=${line%%]*}
 		key_word=${key_word_tmp:1}
 		value_tmp=${line%]*}
@@ -94,7 +103,6 @@ show(){
 
 init(){
 	parse_conf
-	# show
 
 	echo -n ""> $log_file
 
@@ -149,59 +157,47 @@ handle_bf(){
 		((bf_ip_count_arr[$tmp_index]++))
 	fi
 
-	############### diff ??????
-	for ip in "${bf_ip_arr[@]}"
-	do
-		echo -n "     $ip"
-	done
-	echo "<<"
 }
 
 is_reached_threshold(){
+	local tmp_count tmp_index alarm_str
 
-	# for tmp_count in "${bf_ip_count_arr[@]}"
-	# do
-	# 	echo $tmp_count
-	# 	if [[ $tmp_count -ge $limit_error_num ]]; then
-	# 		echo "${bf_ip_arr[$tmp_index]} is bf $tmp_count"
-	# 		bf_ip_count_arr[$tmp_index]=0
-	# 	else
-	# 		((tmp_index++))
-	# 	fi
-	# done
+	for tmp_count in "${bf_ip_count_arr[@]}"
+	do
+		echo ">>${bf_ip_arr[$tmp_index]} is bf $tmp_count"
+		if [[ $tmp_count -ge $limit_error_num ]]; then
+			alarm_str="IP:${bf_ip_arr[$tmp_index]} is try to login ${tmp_count} times"
+			do_log 2 "$alarm_str"
+			bf_ip_count_arr[$tmp_index]=0
+		else
+			((tmp_index++))
+	 	fi
+	done
 
-echo "okok"
 }
 
 do_analysis(){
-	local new_add_log bf_num
+	local new_add_log bf_num log_line
 
 	file_offset=$(wc -l $monitor_file|awk '{print $1}')
 	[ $old_file_offset -eq $file_offset ] && return 1
-	sed -n "$old_file_offset,\$p" $monitor_file| tail -n +2| while read log_line
+	sed -n "$old_file_offset,\$p" $monitor_file| tail -n +2 > tmp_file
+	while read log_line
 	do	
 		analysis_log "$log_line"
 		ret=$?
 		[ $ret -eq 0 ] && continue
 
 		handle_bf "$log_line"
-	done
+	done < tmp_file
 
-	################################## why empty array
-	for ip in "${bf_ip_arr[@]}"
-	do
-		echo -n "     $ip"
-	done
-	echo "<<<<<"
-
-	is_reached_threshold "${bf_ip_arr[*]}"
+	is_reached_threshold 
 	old_file_offset=$file_offset	
 	
 	return 0
 }
 
 analysis_loop(){
-
 	for((;;))
 	do
 		do_analysis 
@@ -210,10 +206,8 @@ analysis_loop(){
 }
 
 main(){
-	# parse_conf
-#	show
 	init
-
+	#show
 	analysis_loop
 }
 
