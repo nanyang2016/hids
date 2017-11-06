@@ -1,0 +1,102 @@
+#!/bin/bash
+
+#set -x
+
+USER_MONITOR_PATH=$(cd $(dirname $0)/..;pwd)
+CONF_FILE=$USER_MONITOR_PATH"/conf/user_monitor.conf"
+LOG_FILE=$USER_MONITOR_PATH"/log/user_monitor.log"
+PASSWD_FILE="/etc/passwd"
+
+declare root_user_monitor=0
+declare user_change_monitor=0
+declare userinfo_change_monitor=0
+declare scan_frequency=0
+declare -a white_list=()
+
+
+
+INFO=1
+ALARM=2
+ERROR=3
+
+do_log(){
+        local log_time log_type log_content
+
+        case $1 in
+                1 )log_type="[INFO]"
+                        ;;
+                2 )log_type="[ALARM]"
+                        ;;
+                3 )log_type="[ERROR]"
+                        ;;
+        esac
+
+        log_time=$(date +"%Y/%m/%d_%H:%M:%S")
+        log_content="$2"
+
+        printf "%-18s %-8s %s\n" "$log_time" "$log_type" "$log_content" >> $log_file
+}
+
+add_white_list(){
+:
+}
+
+parse_value(){
+	
+	echo 99
+}
+
+parse_conf(){
+		
+
+	while read line
+	do
+		[ ${line:0:1} == "#" -a -z "$line" ] && continue
+
+                key_word_tmp=${line%%]*}
+                key_word=${key_word_tmp:1}
+                value_tmp=${line%]*}
+                value=${value_tmp##*[}
+
+		case $key_word in
+		"root_user_monitor")
+			root_user_monitor=$(parse_value "$value")
+			;;
+		"user_change_monitor")
+			user_change_monitor=$(parse_value "$value")
+			;;
+		"userinfo_change_monitor")
+			userinfo_change_monitor=$(parse_value "$value")
+			;;
+		"scan_frequency")
+			scan_frequency=$value
+			;;
+		"white_list")
+			add_white_list $value
+			;;
+		*)
+			do_log 3 "error config format."
+		esac
+	done < $CONF_FILE
+}
+
+init(){
+	parse_conf
+	echo ">"$root_user_monitor
+	echo ">>"$user_change_monitor
+	echo ">>>"$userinfo_change_monitor
+	echo ">>>>"$scan_frequency
+}
+
+analysis_loop(){
+:
+
+}
+
+main(){
+	init
+	analysis_loop
+
+}
+
+main $@
