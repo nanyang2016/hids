@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sap1008 version = "1.0.1">
+	<filter>
+		<type name="command">
+			<filter-name name="test" />
+			<filter-name name="continue" />
+			<filter-name name="read" />
+			<filter-name name="local" />
+			<filter-name name="return" />
+			<filter-name name="sleep" />
+			<filter-name name="TRUE" />
+			<filter-name name="wc" />
+			<filter-name name="let" />
+			<filter-name name="expr" />
+			<filter-name name="[" />
+		</type>
+		
+		<type name="fatherProcess" maxLen="250">
+			<filter-name name="secu-tcs-agent-mon-safe.sh" />
+			<filter-name name="secu-tcs-agent-mon.sh" />
+			<filter-name name="/usr/local/agenttools/agent/base" />
+			<filter-name name="sh ./report_tfshttp.sh" />
+			<filter-name name="/bin/sh ./safe_TsysProxy.sh start" />
+			<filter-name name="/bin/sh ./safe_TsysAgent.sh start" />
+			<filter-name name="/bin/sh /home/qspace/bin/CK_allagent" />
+			<filter-name name="/bin/sh ./report_tfshttp.sh" />
+			<filter-name name="/bin/sh ./proc_monitor_new.sh" />
+			<filter-name name="/bin/sh ./monitor.sh /usr/local/services" />
+			<filter-name name="/usr/local/agenttools/agent/plugins/titan_for_serverV1.0" />
+			<filter-name name="sh /data/oc_agent/scripts/crontab_monitor.sh /data/oc_agent/conf/crontab_scripts.conf /data/oc_agent/conf/nested_scripts.conf" />
+			<filter-name name="/bin/sh ./agent_new.sh" />
+			<filter-name name="/bin/sh ./report_v.sh" />
+			<filter-name name="/bin/sh /var/spool/cronx/shells/11136.sh" />
+			<filter-name name="/bin/sh /usr/local/tcss/bin/code_daily_house_keeping.sh" />
+			<filter-name name="/bin/sh /usr/local/sa/agent/secu-tcs-agent-mon.sh" />
+			<filter-name name="/bin/sh ./check_proc.sh" />
+			<filter-name name="/bin/sh ./fd_mon.sh" />
+			<filter-name name="/bin/bash /usr/local/sa/agent/secu-tcs-agent-mon-safe.sh" />
+			<filter-name name="python /usr/local/agenttools/agent/ServerMonitor.py" />
+			<filter-name name="sh /usr/local/tssd/cell_detector/src/detect_machine" />
+		</type>
+	</filter>
+</sap1008>

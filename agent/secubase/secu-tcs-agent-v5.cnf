@@ -1,0 +1,41 @@
+#onion_v5 conf
+
+#basic conf
+szWorkDir		/usr/local/sa/agent
+szCnfFileName		/usr/local/sa/agent/secubase/secu-tcs-agent-v5.cnf
+szTmpCnfFileName		/usr/local/sa/agent/secubase/secu-tcs-agent-v5.tmp
+
+#log conf
+ulLogLevel		8
+ulMaxFileSize		5242880
+ulMaxFileCnt		3
+szLogFile		/usr/local/sa/agent/log/secu-tcs-agent-v5
+
+#network conf
+ulMaxFailNums		10
+ulMaxFailInterval		30
+ulMaxWeakNums		16
+ulRetryInterval		60
+ulNetTimeOut		2000
+szOldUSocketFile		/usr/local/sa/agent/secubase/secu-tcs-agent.unix
+szUSocketFilePlugIn		/usr/local/sa/agent/secubase/secu-tcs-agent-v5.unix
+szUSocketFileNotPlugIn		/usr/local/sa/agent/secubase/secu-tcs-agent-v5-notpl.unix
+
+#diffie-hellman conf
+szConnPubKey		59B1DC41AEF14A1DABB0D55D5D1C9265535E7C79AD8CC906DE839C2452274CE0F46152EB859A2BC618C84D53B19977890D36C3F662686009874F665EAF039651
+szParam_P		9B456D1874C0810D293ECAD1557075307E1F9FF6B0A2E1B3CD67338641075AF18A397A4D553A786D764489C948BE499EF20386B632EB8BA22F165B6E583B29AB
+szParam_G		2
+
+#sync service framework conf
+ulMaxSessCnt		1000
+ulSessTimeout		2000
+ulMaxCheckTimeoutCnt		200
+ulPlunInHBLostTime		300
+ulDataCacheSize		12582912
+allow_send_limit		no
+pkg_send_limit		50000
+net_data_compress		yes
+docpulimit_for_compress		no
+resident_process_mask		28667
+
+#orig remote conf

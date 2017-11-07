@@ -1,0 +1,19 @@
+-------------------begin install-------------------
+[extracting file] ......
+[copying file] ......
+coping /usr/local/sa/agent/tmp/mytmp/secu-tcs-agent to /usr/local/sa/agent/secu-tcs-agent ...... [yes]
+coping /usr/local/sa/agent/tmp/mytmp/secu-tcs-agent-mon-safe.sh to /usr/local/sa/agent/secu-tcs-agent-mon-safe.sh ...... [yes]
+coping /usr/local/sa/agent/tmp/mytmp/restart.sh to /usr/local/sa/agent/restart.sh ...... [yes]
+coping /usr/local/sa/agent/tmp/mytmp/stop.sh to /usr/local/sa/agent/stop.sh ...... [yes]
+coping /usr/local/sa/agent/tmp/mytmp/check.sh to /usr/local/sa/agent/check.sh ...... [yes]
+coping /usr/local/sa/agent/tmp/mytmp/check.pl to /usr/local/sa/agent/check.pl ...... [yes]
+coping /usr/local/sa/agent/tmp/mytmp/uninstall.sh to /usr/local/sa/agent/uninstall.sh ...... [yes]
+coping /usr/local/sa/agent/tmp/mytmp/init_check.sh to /usr/local/sa/agent/init_check.sh ...... [yes]
+coping /usr/local/sa/agent/tmp/mytmp/secubase/secu-tcs-agent.sig to /usr/local/sa/agent/secubase/secu-tcs-agent.sig ...... [yes]
+coping /usr/local/sa/agent/tmp/mytmp/plugins to /usr/local/sa/agent/ ...... [yes]
+coping /usr/local/sa/agent/tmp/mytmp/watchdog.sh to /usr/local/sa/agent/watchdog.sh ...... [yes]
+repair crontab ok
+[setting file permission] ......
+--------------------------------------------------
+[install crontab monitor] ......
+[cleaning tmp file] ......

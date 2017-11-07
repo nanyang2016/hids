@@ -1,0 +1,11 @@
+#onion_v5 tmp conf
+stCurConnIp		10.252.230.13
+stCurConnPort		9988
+ulAgentLastQuitRsn		2
+
+
+bDisasterMode		n
+ulDisasterPolicy		0
+ulDiscardPercent		0
+astDataType		
+
