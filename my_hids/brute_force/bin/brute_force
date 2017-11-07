@@ -3,11 +3,11 @@
 # set -x 
 
 todolist="
-	1.no monitor/log/conf file
 	2.error configer arguments
 	3.function for show arr_ip
 	4.different log format
-	5.delete tmp_file or move to /tmp
+	6.add log true 
+	7.print conf to log
 "
 
 str="Oct 15 21:25:26 ny-ubuntu sshd[7826]: Failed password for root from 120.77.47.97 port 45904 ssh2"
@@ -82,15 +82,36 @@ parse_conf(){
 				scan_frequency=$value
 				;;  
 			"white_list") 
-				white_list="value"
+				white_list="$value"
 				;;  
 			*)
-				rt=1
+				do_log 3 "Error config option $value."
+				echo 1
 				;;
 		esac
 	done < $conf_file
+	
+	if [ ! -f $monitor_file ];then
+		do_log 3 "Can not find monitor file."
+		echo 2
+	fi
 
-	return $rt
+	if [ $limit_time -lt 0 ];then
+		do_log 3 "Error limit_time."
+		echo 2
+	fi
+
+	if [ $limit_error_num -lt 0 ];then
+		do_log 3 "Error limit error num"
+		echo 2
+	fi
+
+	if [ $scan_frequency -lt 0 ];then
+		do_log 3 "Error scan frequency."
+		echo 2
+	fi
+
+	return $rt 
 }
 
 show(){
@@ -103,12 +124,22 @@ show(){
 }
 
 init(){
-	parse_conf
+	local ret=0
 
-	echo -n ""> $log_file
+	if [ -f $conf_file -a -f $log_file ];then
+		ret=$(parse_conf)
+		[ "$ret"x != "0"x ] || return 1
+	else
+		do_log 3 "configuration file or log file missed."
+		return 1
+	fi 
+
+	#echo -n ""> $log_file
 
 	file_offset=`wc -l $monitor_file|awk '{print $1}'`
 	old_file_offset=$file_offset
+
+	return 0
 }
 
 analysis_log(){
@@ -165,7 +196,6 @@ is_reached_threshold(){
 
 	for tmp_count in "${bf_ip_count_arr[@]}"
 	do
-		echo ">>${bf_ip_arr[$tmp_index]} is bf $tmp_count"
 		if [[ $tmp_count -ge $limit_error_num ]]; then
 			alarm_str="IP:${bf_ip_arr[$tmp_index]} is try to login ${tmp_count} times"
 			do_log 2 "$alarm_str"
@@ -179,18 +209,22 @@ is_reached_threshold(){
 
 do_analysis(){
 	local new_add_log bf_num log_line
+	local old_ifs
 
 	file_offset=$(wc -l $monitor_file|awk '{print $1}')
 	[ $old_file_offset -eq $file_offset ] && return 1
-	sed -n "$old_file_offset,\$p" $monitor_file| tail -n +2 > tmp_file
-	while read log_line
+
+	old_ifs=$IFS
+	IFS=$'\n'
+	for log_line in $(sed -n "$old_file_offset,\$p" $monitor_file| tail -n +2)
 	do	
 		analysis_log "$log_line"
 		ret=$?
 		[ $ret -eq 0 ] && continue
 
 		handle_bf "$log_line"
-	done < tmp_file
+	done
+	IFS=$old_ifs
 
 	is_reached_threshold 
 	old_file_offset=$file_offset	
@@ -208,8 +242,14 @@ analysis_loop(){
 
 main(){
 	init
+	echo $?
+	if [ $? -ne 0 ];then
+		do_log 3 "Initialization failed."
+		return 1
+	fi
+
 	#show
 	analysis_loop
 }
 
-main 
+main $@
