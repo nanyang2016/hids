@@ -1,3 +1,11 @@
-
-2017/11/08_00:03:31 [ERROR]  Initialization failed.
-2017/11/08_00:05:15 [ERROR]  Initialization failed.
+2017/11/12_21:11:58 [INFO]   Brute force start.
+2017/11/12_21:11:58 [ERROR]  Error config option start_now_log.
+2017/11/12_21:11:58 [INFO]   Initialization successful.
+2017/11/12_21:11:58 [INFO]   monitor_file=/var/log/auth.log
+2017/11/12_21:11:58 [INFO]   key_words=Failed password
+2017/11/12_21:11:58 [INFO]   limit_time=60
+2017/11/12_21:11:58 [INFO]   limit_error_num=5
+2017/11/12_21:11:58 [INFO]   scan_frequency=10
+2017/11/12_21:11:58 [INFO]   white_list=localhost
+2017/11/12_21:11:58 [INFO]   white_list=127.0.0.1
+2017/11/12_21:12:48 [ALARM]  IP:120.77.47.97 is try to login 6 times

@@ -1,15 +1,8 @@
 #!/bin/bash
 
+arr=("aa")
 
-OLD_IFS=$IFS
-IFS=$'\n'
-for one_line in $(cat /var/log/auth.log|head)
-do
-	echo $i"$one_line"
-	((i++))
-done
-IFS=$OLD_IFS
-
-
-
-
+arr[${#arr[@]}]=bbb
+echo ${#arr[@]}
+	
+[[ ${arr[@]} =~ bbb ]] && echo ok

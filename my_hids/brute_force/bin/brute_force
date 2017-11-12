@@ -3,11 +3,8 @@
 # set -x 
 
 todolist="
-	2.error configer arguments
-	3.function for show arr_ip
-	4.different log format
-	6.add log true 
-	7.print conf to log
+	2.limit_time
+	3.new log or add to log 
 "
 
 str="Oct 15 21:25:26 ny-ubuntu sshd[7826]: Failed password for root from 120.77.47.97 port 45904 ssh2"
@@ -23,11 +20,13 @@ limit_time=0
 limit_error_num=0
 scan_frequency=0
 white_list=""
+white_list_arr=()
 
 declare -a bf_ip_arr=()
 declare -a bf_ip_count_arr=()
 declare bf_arr_index=0
 declare file_offset=0 old_file_offset=0
+declare config_str=""
 
 INFO=1
 ALARM=2
@@ -51,20 +50,19 @@ do_log(){
 	printf "%-18s %-8s %s\n" "$log_time" "$log_type" "$log_content"	>> $log_file
 }
 
-
 parse_conf(){
 	local log_file_content key_word_tmp key_word value_tmp value line
-	local rt=0
+	local ret=0
 
-	log_file_content=$(cat $conf_file)
 	while read line
 	do
-		[ "${line:0:1}"x == "#" -a -z "$line" ] && continue		
+		[ "${line:0:1}" == "#" -o -z "$line" ] && continue		
 
 		key_word_tmp=${line%%]*}
 		key_word=${key_word_tmp:1}
 		value_tmp=${line%]*}
 		value=${value_tmp##*[}
+
 		case $key_word in
 			"monitor_file") 
 				monitor_file="$value"
@@ -82,63 +80,71 @@ parse_conf(){
 				scan_frequency=$value
 				;;  
 			"white_list") 
+				white_list_arr[${#white_list_arr[@]}]="$value"
 				white_list="$value"
 				;;  
 			*)
-				do_log 3 "Error config option $value."
-				echo 1
+				do_log 3 "Error config option ${key_word}."
+				#ret=1
 				;;
 		esac
 	done < $conf_file
 	
-	if [ ! -f $monitor_file ];then
+	if [ ! -f "$monitor_file" ];then
 		do_log 3 "Can not find monitor file."
-		echo 2
+		ret=2
 	fi
 
 	if [ $limit_time -lt 0 ];then
 		do_log 3 "Error limit_time."
-		echo 2
+		ret=3
 	fi
 
 	if [ $limit_error_num -lt 0 ];then
 		do_log 3 "Error limit error num"
-		echo 2
+		ret=4
 	fi
 
 	if [ $scan_frequency -lt 0 ];then
 		do_log 3 "Error scan frequency."
-		echo 2
+		ret=5
 	fi
 
-	return $rt 
+	return $ret
 }
 
-show(){
-	echo $monitor_file
-	echo $key_words
-	echo $limit_time
-	echo $limit_error_num
-	echo $scan_frequency
-	echo ">"$white_list
+show_conf(){
+	local tmp_ip
+	
+	do_log 1 "monitor_file=${monitor_file}"
+	do_log 1 "key_words=${key_words}"
+	do_log 1 "limit_time=${limit_time}"
+	do_log 1 "limit_error_num=${limit_error_num}"
+	do_log 1 "scan_frequency=${scan_frequency}"
+	for tmp_ip in ${white_list_arr[@]}
+	do
+		do_log 1 "white_list=$tmp_ip"
+	done
 }
 
 init(){
 	local ret=0
+	
+	echo -ne "" > $log_file
+	do_log 1 "Brute force start."
 
-	if [ -f $conf_file -a -f $log_file ];then
-		ret=$(parse_conf)
-		[ "$ret"x != "0"x ] || return 1
+	if [ -f "$conf_file" -a -f "$log_file" ];then
+		parse_conf
+		ret=$?
+		[ "$ret" != "0" ] && return 1
 	else
 		do_log 3 "configuration file or log file missed."
-		return 1
+		return 2
 	fi 
-
-	#echo -n ""> $log_file
 
 	file_offset=`wc -l $monitor_file|awk '{print $1}'`
 	old_file_offset=$file_offset
-
+	
 	return 0
 }
 
@@ -162,6 +168,7 @@ is_new_ip(){
 	return 0
 }
 
+
 handle_bf(){
 	local log_str bf_time bf_user bf_ip
 	local tmp_index=0 tmp_ip
@@ -172,6 +179,8 @@ handle_bf(){
 	bf_user=$(echo $log_str| sed -n 's/^.*for \(.*\) from.*$/\1/p')
 	bf_ip=$(echo $log_str| grep -E -o "(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)|localhost")
 	
+	[[ ${white_list_arr[@]} =~ "$bf_ip" ]] && return
+
 	is_new_ip "$bf_ip"
 	ret=$?
 	if [ $ret -eq 0 ];then
@@ -188,7 +197,6 @@ handle_bf(){
 		done
 		((bf_ip_count_arr[$tmp_index]++))
 	fi
-
 }
 
 is_reached_threshold(){
@@ -242,13 +250,15 @@ analysis_loop(){
 
 main(){
 	init
-	echo $?
-	if [ $? -ne 0 ];then
+	ret=$?
+	if [ $ret -eq 0 ];then
+		do_log 1 "Initialization successful.$config_str"
+		show_conf
+	else
 		do_log 3 "Initialization failed."
 		return 1
 	fi
 
-	#show
 	analysis_loop
 }
 
