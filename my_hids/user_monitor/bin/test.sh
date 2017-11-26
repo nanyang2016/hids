@@ -4,8 +4,8 @@ b=(1 2 3,
 4 5 6,
 7 8 9)
 
-while read line
-do
-	echo "$line"
-
-done < /etc/passwd
+if [ -z "${b[*]}" ];then
+	echo 111
+else
+	echo 333
+fi

@@ -1,0 +1,21 @@
+INFO=1
+ALARM=2
+ERROR=3
+
+do_log(){
+	local log_time log_type log_content
+
+	case $1 in
+		1 )log_type="[INFO]"
+			;;
+		2 )log_type="[ALARM]"
+			;;
+		3 )log_type="[ERROR]"
+			;;
+	esac
+
+	log_time=$(date +"%Y/%m/%d_%H:%M:%S")
+	log_content="$2"
+
+	printf "%-18s %-8s %s\n" "$log_time" "$log_type" "$log_content"	>> $log_file
+}

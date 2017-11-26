@@ -9,6 +9,8 @@ todolist="
 
 str="Oct 15 21:25:26 ny-ubuntu sshd[7826]: Failed password for root from 120.77.47.97 port 45904 ssh2"
 
+. ../../lib/do_log 
+
 brute_force_path=$(cd $(dirname $0)/..;pwd)
 bin_file="$brute_force_path/bin/brute_force"
 conf_file="$brute_force_path/conf/ssh.conf"
@@ -27,28 +29,6 @@ declare -a bf_ip_count_arr=()
 declare bf_arr_index=0
 declare file_offset=0 old_file_offset=0
 declare config_str=""
-
-INFO=1
-ALARM=2
-ERROR=3
-
-do_log(){
-	local log_time log_type log_content
-
-	case $1 in
-		1 )log_type="[INFO]"
-			;;
-		2 )log_type="[ALARM]"
-			;;
-		3 )log_type="[ERROR]"
-			;;
-	esac
-
-	log_time=$(date +"%Y/%m/%d_%H:%M:%S")
-	log_content="$2"
-
-	printf "%-18s %-8s %s\n" "$log_time" "$log_type" "$log_content"	>> $log_file
-}
 
 parse_conf(){
 	local log_file_content key_word_tmp key_word value_tmp value line

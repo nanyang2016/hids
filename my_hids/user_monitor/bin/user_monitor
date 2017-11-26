@@ -1,40 +1,49 @@
 #!/bin/bash
-
 #set -x
+
+todo_list="
+	1.user add delete monitor
+	2.illegal root user
+	3.user info change
+	root:x:0:0:root:/root:/bin/bash
+
+"
 
 USER_MONITOR_PATH=$(cd $(dirname $0)/..;pwd)
 CONF_FILE=$USER_MONITOR_PATH"/conf/user_monitor.conf"
 LOG_FILE=$USER_MONITOR_PATH"/log/user_monitor.log"
 PASSWD_FILE="/etc/passwd"
+SHADOW_FILE="/etc/shadow"
 
 declare root_user_monitor=0
 declare user_change_monitor=0
 declare userinfo_change_monitor=0
 declare scan_frequency=0
 declare -a white_list=()
-
-
+declare -a user_info=()
+declare -a user_info_new=()
+check_times=0
 
 INFO=1
 ALARM=2
 ERROR=3
 
 do_log(){
-        local log_time log_type log_content
+	local log_time log_type log_content
 
-        case $1 in
-                1 )log_type="[INFO]"
-                        ;;
-                2 )log_type="[ALARM]"
-                        ;;
-                3 )log_type="[ERROR]"
-                        ;;
-        esac
+	case $1 in
+		1 )log_type="[INFO]"
+			;;
+		2 )log_type="[ALARM]"
+			;;
+		3 )log_type="[ERROR]"
+			;;
+	esac
 
-        log_time=$(date +"%Y/%m/%d_%H:%M:%S")
-        log_content="$2"
+	log_time=$(date +"%Y/%m/%d_%H:%M:%S")
+	log_content="$2"
 
-        printf "%-18s %-8s %s\n" "$log_time" "$log_type" "$log_content" >> $log_file
+	printf "%-18s %-8s %s\n" "$log_time" "$log_type" "$log_content"	>> $LOG_FILE
 }
 
 add_white_list(){
@@ -42,8 +51,14 @@ add_white_list(){
 }
 
 parse_value(){
-	
-	echo 99
+	if [ $1 == "Ture" -o $1 == "ture" -o $1 == "TRUE" ];then
+		echo 1
+	elif [ $1 == "False" -o $1 == "false" -o $1 == "FALSE" ];then
+		echo 0
+	else
+		echo 1
+		do_log 3 "Error configure $1"		
+	fi
 }
 
 parse_conf(){
@@ -80,17 +95,57 @@ parse_conf(){
 	done < $CONF_FILE
 }
 
+show_user_info(){
+	
+	echo "=========================================$check_times"
+	for line in ${user_info[@]}
+	do
+		echo $line
+	done
+
+	for line in ${user_info_new[@]}
+	do
+		echo ">>>>>>>>>>>>>"$line
+	done
+}
+
+get_userinfo(){
+	local line1 line2 tmp_line
+
+	user_info_new=()
+	exec 3<"$PASSWD_FILE"
+	exec 4<"$SHADOW_FILE"
+	while read line1<&3 && read line2<&4
+	do
+		tmp_line=$(echo "$line1":"$line2"|awk -F ":" '{printf("%s:%s:%s:%s:%s\n",$1,$3,$4,$7,$9)}')
+		if [ $check_times -eq 0 ];then
+			user_info[${#user_info[@]}]=$tmp_line
+		else
+			user_info_new[${#user_info_new[@]}]=$tmp_line
+		fi
+	done 
+	((check_times++))
+}
+
 init(){
+	do_log 1 "Start monitor user."
 	parse_conf
-	echo ">"$root_user_monitor
-	echo ">>"$user_change_monitor
-	echo ">>>"$userinfo_change_monitor
-	echo ">>>>"$scan_frequency
+	do_log 1 "monitor root user: $root_user_monitor"
+	do_log 1 "monitor user info change:$user_change_monitor"
+	do_log 1 "monitor userinfo change:$userinfo_change_monitor"
+	do_log 1 "scan_frequency:$scan_frequency"
+
+	get_userinfo
 }
 
 analysis_loop(){
-:
 
+	for((;;))
+	do	
+		show_user_info
+		sleep $scan_frequency
+		get_userinfo
+	done
 }
 
 main(){
